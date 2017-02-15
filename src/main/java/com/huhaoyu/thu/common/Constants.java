@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public interface Constants {
 
-    public static final String GLOBAL_ADMIN_RECEIVER = "subscribe@huhaoyu.com";
+    String GLOBAL_ADMIN_RECEIVER = "subscribe@huhaoyu.com";
 
     @Getter
     enum SimpleMailTemplate {
