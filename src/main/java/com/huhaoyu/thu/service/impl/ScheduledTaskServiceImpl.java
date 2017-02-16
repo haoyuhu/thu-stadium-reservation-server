@@ -206,18 +206,18 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
 
     private Map<String, Object> createGroupInfo(String openId, ReservationGroup group) {
         Map<String, Object> item = new HashMap<>();
-        List<Long> ids = new ArrayList<>();
+        List<Integer> codes = new ArrayList<>();
         List<Map> list = new ArrayList<>();
         List<ReservationCandidate> candidates = group.getAvailableReservationCandidate();
         for (ReservationCandidate candidate : candidates) {
             Map<String, Object> c = createCandidateInfo(candidate);
             if (c == null) continue;
             list.add(c);
-            ids.add(candidate.getId());
+            codes.add(candidate.hashCode());
         }
-        Collections.sort(ids);
-        List<String> idStrings = ids.stream().map(String::valueOf).collect(Collectors.toList());
-        String raw = String.join(CommonUtil.COMMA_SEPARATOR, idStrings);
+        Collections.sort(codes);
+        List<String> codeStrings = codes.stream().map(String::valueOf).collect(Collectors.toList());
+        String raw = String.join(CommonUtil.COMMA_SEPARATOR, codeStrings);
 
         item.put("sub_sig", DigestUtils.md5DigestAsHex(raw.getBytes()));
         item.put("open_id", openId);
