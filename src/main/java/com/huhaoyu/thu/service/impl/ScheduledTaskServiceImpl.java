@@ -156,10 +156,12 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
         for (WechatUser user : wechatService.findAllWechatUser()) {
             // add account
             THUAccount acc = user.getAccountBeingUsed();
-            if (acc == null || accountMap.containsKey(acc.getUsername())) continue;
-            Map<String, String> accInfo = createAccountInfo(acc);
-            if (accInfo == null) continue;
-            accountMap.put(acc.getUsername(), accInfo);
+            if (acc == null) continue;
+            if (!accountMap.containsKey(acc.getUsername())) {
+                Map<String, String> accInfo = createAccountInfo(acc);
+                if (accInfo == null) continue;
+                accountMap.put(acc.getUsername(), accInfo);
+            }
             // add reservation
             List<Map> groups = new ArrayList<>();
             for (ReservationGroup group : user.getAvailableReservationGroup()) {
@@ -172,10 +174,12 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
             List<Map> current = groupsMap.get(acc.getUsername());
             current.addAll(groups);
         }
-        // create signature and filter wrong account
+        // create signature and filter accounts that are incorrect or accounts whose group is empty
         for (String username : accountMap.keySet()) {
             List<String> signatures = new ArrayList<>();
             List<Map> groups = groupsMap.get(username);
+            if (groups.isEmpty()) continue;
+
             for (Map group : groups) {
                 String subSig = (String) group.get("sub_sig");
                 signatures.add(subSig);
