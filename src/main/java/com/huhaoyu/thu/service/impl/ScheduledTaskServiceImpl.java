@@ -157,6 +157,10 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
             // add account
             THUAccount acc = user.getAccountBeingUsed();
             if (acc == null) continue;
+            String studentId = acc.getStudentId();
+            String password = acc.getPassword();
+            if (!accountService.verifyAccount(studentId, password)) continue;
+
             if (!accountMap.containsKey(acc.getUsername())) {
                 Map<String, String> accInfo = createAccountInfo(acc);
                 if (accInfo == null) continue;
@@ -186,17 +190,12 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
             }
             Collections.sort(signatures);
             String sig = DigestUtils.md5DigestAsHex(String.join(CommonUtil.COMMA_SEPARATOR, signatures).getBytes());
-
             Map account = accountMap.get(username);
-            String studentId = (String) account.get("student_id");
-            String password = (String) account.get("password");
-            if (accountService.verifyAccount(studentId, password)) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("sig", sig);
-                item.put("account", account);
-                item.put("groups", groups);
-                list.add(item);
-            }
+            Map<String, Object> item = new HashMap<>();
+            item.put("sig", sig);
+            item.put("account", account);
+            item.put("groups", groups);
+            list.add(item);
         }
         ObjectMapper mapper = new ObjectMapper();
         try {
