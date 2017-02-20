@@ -36,7 +36,7 @@ public class AuthorizationController {
                                 @RequestParam(value = "province", required = false) String province,
                                 @RequestParam(value = "country", required = false) String country,
                                 @RequestParam(value = "avatar_url") String avatarUrl,
-                                @RequestParam(value = "description") String description) {
+                                @RequestParam(value = "description", required = false) String description) {
         WechatToken token = wechatService.getWechatTokenByCode(code);
         if (token == null) {
             return ResponseEntity.ok(Response.IncorrectAuthCode.createResponseMap());
