@@ -18,6 +18,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.DigestUtils;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.util.*;
 
 import static com.huhaoyu.thu.common.Constants.*;
@@ -34,10 +36,10 @@ public class ReservationServerApplicationTests {
     MailService mailService;
 
     @Test
-    public void testMail() {
+    public void testMail() throws MessagingException {
         SimpleMailTemplate template = SimpleMailTemplate.Test;
         String[] receivers = {"test@huhaoyu.com", "im@huhaoyu.com"};
-        SimpleMailMessage message =
+        MimeMessage message =
                 mailService.createSimpleTextMailMessage(template.getSubject(), template.getBody(), receivers);
         try {
             mailService.sendMail(message);
@@ -53,8 +55,17 @@ public class ReservationServerApplicationTests {
     public void testUtils() throws JsonProcessingException {
         String testString = "hello world!";
         String testPassword = "4d87635d88f21069";
-        String encrypted = SecurityUtil.encrypt(testString, testPassword, securityConfig.getSymmetricEncryptionAlgorithm());
-        String decrypted = SecurityUtil.decrypt(encrypted, testPassword, securityConfig.getSymmetricEncryptionAlgorithm());
+        String encrypted = SecurityUtil.encrypt(
+                testString,
+                testPassword,
+                securityConfig.getSymmetricEncryptionAlgorithm(),
+                securityConfig.getSymmetricEncryptionAlgorithmMode(),
+                securityConfig.getSymmetricEncryptionAlgorithmIV());
+        String decrypted = SecurityUtil.decrypt(
+                encrypted, testPassword,
+                securityConfig.getSymmetricEncryptionAlgorithm(),
+                securityConfig.getSymmetricEncryptionAlgorithmMode(),
+                securityConfig.getSymmetricEncryptionAlgorithmIV());
         Assert.assertEquals("assert origin and string after encrypted and decrypted", testString, decrypted);
 
         Map<String, Object> data = new TreeMap<>();
@@ -96,10 +107,18 @@ public class ReservationServerApplicationTests {
         List<Map> list = Arrays.asList(r1, r2);
         ObjectMapper mapper = new ObjectMapper();
         String raw = mapper.writeValueAsString(list);
-        String after = SecurityUtil.encrypt(raw, securityConfig.getScheduledTaskSecretKey(),
-                securityConfig.getSymmetricEncryptionAlgorithm());
-        Assert.assertEquals("assert encrypted list of map", raw, SecurityUtil.decrypt(after,
-                securityConfig.getScheduledTaskSecretKey(), securityConfig.getSymmetricEncryptionAlgorithm()));
+        String after = SecurityUtil.encrypt(
+                raw,
+                securityConfig.getScheduledTaskSecretKey(),
+                securityConfig.getSymmetricEncryptionAlgorithm(),
+                securityConfig.getSymmetricEncryptionAlgorithmMode(),
+                securityConfig.getSymmetricEncryptionAlgorithmIV());
+        Assert.assertEquals("assert encrypted list of map", raw, SecurityUtil.decrypt(
+                after,
+                securityConfig.getScheduledTaskSecretKey(),
+                securityConfig.getSymmetricEncryptionAlgorithm(),
+                securityConfig.getSymmetricEncryptionAlgorithmMode(),
+                securityConfig.getSymmetricEncryptionAlgorithmIV()));
 
         Map<String, Object> test = new TreeMap<>();
         test.put("secret_id", securityConfig.getScheduledTaskSecretId());
