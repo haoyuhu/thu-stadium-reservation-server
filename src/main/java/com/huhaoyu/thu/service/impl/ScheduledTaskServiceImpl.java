@@ -67,10 +67,16 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
             throw new UnacceptableParamException("unacceptable signature");
         }
         // decrypt data
-        String json = SecurityUtil.decrypt(encrypted, config.getScheduledTaskSecretKey(), config.getSymmetricEncryptionAlgorithm());
+        String json = SecurityUtil.decrypt(
+                encrypted,
+                config.getScheduledTaskSecretKey(),
+                config.getSymmetricEncryptionAlgorithm(),
+                config.getSymmetricEncryptionAlgorithmMode(),
+                config.getSymmetricEncryptionAlgorithmIV());
         if (json == null) {
             throw new UnacceptableParamException("cannot decrypt encrypted content");
         }
+        logger.debug("records json used for sending notification mails: " + json);
         ObjectMapper mapper = new ObjectMapper();
         try {
             Map[] list = mapper.readValue(json, Map[].class);
@@ -200,7 +206,12 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(list);
-            return SecurityUtil.encrypt(json, config.getScheduledTaskSecretKey(), config.getSymmetricEncryptionAlgorithm());
+            return SecurityUtil.encrypt(
+                    json,
+                    config.getScheduledTaskSecretKey(),
+                    config.getSymmetricEncryptionAlgorithm(),
+                    config.getSymmetricEncryptionAlgorithmMode(),
+                    config.getSymmetricEncryptionAlgorithmIV());
         } catch (JsonProcessingException e) {
             logger.error("cannot convert reservation list to json string", e);
             throw new ServerErrorException("cannot convert reservation list to json string");

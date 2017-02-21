@@ -32,6 +32,10 @@ public class SecurityConfiguration {
     private String signatureAlgorithm;
     @Value(value = "${encryption.algorithm.aes}")
     private String symmetricEncryptionAlgorithm;
+    @Value(value = "${encryption.algorithm.aes.mode}")
+    private String symmetricEncryptionAlgorithmMode;
+    @Value(value = "${encryption.algorithm.aes.iv}")
+    private String symmetricEncryptionAlgorithmIV;
     @Value(value = "${encryption.iteration}")
     private int iterations;
     @Value(value = "${session.normal.timeout}")
