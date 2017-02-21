@@ -176,7 +176,9 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
             List<Map> groups = new ArrayList<>();
             for (ReservationGroup group : user.getAvailableReservationGroup()) {
                 Map<String, Object> groupInfo = createGroupInfo(user.getOpenId(), group);
-                groups.add(groupInfo);
+                if (groupInfo != null) {
+                    groups.add(groupInfo);
+                }
             }
             if (!groupsMap.containsKey(acc.getUsername())) {
                 groupsMap.put(acc.getUsername(), new ArrayList<>());
@@ -223,6 +225,8 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
         List<Integer> codes = new ArrayList<>();
         List<Map> list = new ArrayList<>();
         List<ReservationCandidate> candidates = group.getAvailableReservationCandidate();
+        if (candidates.isEmpty()) return null;
+
         for (ReservationCandidate candidate : candidates) {
             Map<String, Object> c = createCandidateInfo(candidate);
             if (c == null) continue;
