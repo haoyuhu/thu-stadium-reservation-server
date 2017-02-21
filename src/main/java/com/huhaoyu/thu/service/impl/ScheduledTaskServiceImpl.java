@@ -15,11 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
+import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -133,7 +133,7 @@ public class ScheduledTaskServiceImpl implements ScheduledTaskService {
                     username,
                     cost,
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-            SimpleMailMessage message = mailService.createSimpleTextMailMessage(subject, content,
+            MimeMessage message = mailService.createSimpleTextMailMessage(subject, content,
                     receivers.stream().toArray(String[]::new));
             mailService.sendMail(message);
             return true;

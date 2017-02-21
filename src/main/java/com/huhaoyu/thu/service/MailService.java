@@ -1,6 +1,7 @@
 package com.huhaoyu.thu.service;
 
-import org.springframework.mail.SimpleMailMessage;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 /**
  * Created by huhaoyu
@@ -8,17 +9,17 @@ import org.springframework.mail.SimpleMailMessage;
  */
 public interface MailService {
 
-    void sendMail(final SimpleMailMessage message) throws Exception;
+    void sendMail(final MimeMessage message) throws Exception;
 
-    void sendMailByAsynchronousMode(final SimpleMailMessage message) throws Exception;
+    void sendMailByAsynchronousMode(final MimeMessage message) throws Exception;
 
-    void sendMailBySynchronousMode(final SimpleMailMessage message) throws Exception;
+    void sendMailBySynchronousMode(final MimeMessage message) throws Exception;
 
-    SimpleMailMessage createSimpleTextMailMessage(final String subject, final String content,
-                                                  final String[] receivers) throws IllegalArgumentException;
+    MimeMessage createSimpleTextMailMessage(final String subject, final String content,
+                                            final String[] receivers) throws IllegalArgumentException, MessagingException;
 
-    SimpleMailMessage createSimpleTextMailMessage(final String subject, final String content, final String[] receivers,
-                                                  final String[] ccs) throws IllegalArgumentException;
+    MimeMessage createSimpleTextMailMessage(final String subject, final String content, final String[] receivers,
+                                            final String[] ccs) throws IllegalArgumentException, MessagingException;
 
     String createAddressWithNickname(String nickname, String address);
 

@@ -2,6 +2,7 @@ package com.huhaoyu.thu.service.impl;
 
 import com.huhaoyu.thu.config.MailSenderConfiguration;
 import com.huhaoyu.thu.service.MailService;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.util.Assert;
 import org.slf4j.Logger;
@@ -9,9 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.mail.MailException;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 /**
  * Created by huhaoyu
@@ -25,16 +30,16 @@ public class MailServiceImpl implements MailService {
     private static final int DEFAULT_SYNC_SENDING_COUNT_LIMIT = 5;
 
     @Autowired
-    private MailSender mailSender;
+    private JavaMailSender mailSender;
     @Autowired
     private TaskExecutor taskExecutor;
     @Autowired
     private MailSenderConfiguration config;
 
     @Override
-    public void sendMail(SimpleMailMessage message) throws Exception {
+    public void sendMail(MimeMessage message) throws Exception {
         Assert.notNull(message);
-        if (message.getTo().length > DEFAULT_SYNC_SENDING_COUNT_LIMIT) {
+        if (message.getRecipients(Message.RecipientType.TO).length > DEFAULT_SYNC_SENDING_COUNT_LIMIT) {
             sendMailByAsynchronousMode(message);
         } else {
             sendMailBySynchronousMode(message);
@@ -42,7 +47,7 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendMailByAsynchronousMode(final SimpleMailMessage message) throws Exception {
+    public void sendMailByAsynchronousMode(final MimeMessage message) throws Exception {
         taskExecutor.execute(() -> {
             try {
                 sendMailBySynchronousMode(message);
@@ -53,29 +58,31 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendMailBySynchronousMode(SimpleMailMessage message) throws MailException {
+    public void sendMailBySynchronousMode(MimeMessage message) throws MailException {
         mailSender.send(message);
     }
 
     @Override
-    public SimpleMailMessage createSimpleTextMailMessage(String subject, String content, String[] receivers)
-            throws IllegalArgumentException {
+    public MimeMessage createSimpleTextMailMessage(String subject, String content, String[] receivers)
+            throws IllegalArgumentException, MessagingException {
         return createSimpleTextMailMessage(subject, content, receivers, null);
     }
 
     @Override
-    public SimpleMailMessage createSimpleTextMailMessage(String subject, String content, String[] receivers, String[] ccs)
-            throws IllegalArgumentException {
+    public MimeMessage createSimpleTextMailMessage(String subject, String content, String[] receivers, String[] ccs)
+            throws IllegalArgumentException, MessagingException {
         if (StringUtils.isEmpty(subject) || StringUtils.isEmpty(content) || receivers == null || receivers.length == 0) {
             throw new IllegalArgumentException("subject, content should not be null, and receivers should be at least 1 receiver.");
         }
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(createAddressWithNickname(config.getNickname(), config.getUsername()));
-        message.setTo(receivers);
-        message.setSubject(subject);
-        message.setText(content);
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, CharEncoding.UTF_8);
+        helper.setTo(receivers);
+        helper.setFrom(createAddressWithNickname(config.getNickname(), config.getUsername()));
+        helper.setSubject(subject);
+        helper.setText(content);
         if (ccs != null && ccs.length != 0) {
-            message.setCc(ccs);
+            helper.setCc(ccs);
         }
         return message;
     }

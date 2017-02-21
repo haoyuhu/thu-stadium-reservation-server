@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.mail.MailSender;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -52,7 +52,7 @@ public class MailSenderConfiguration {
     private String nickname;
 
     @Bean
-    MailSender mailSender() {
+    JavaMailSender mailSender() {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
         sender.setHost(host);
         sender.setPort(port);
