@@ -6,9 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
 
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 
 /**
@@ -24,7 +28,7 @@ public class HttpUtil {
         String HTTPS = "https";
     }
 
-    private static OkHttpClient client = new OkHttpClient();
+    private static OkHttpClient client = createClient();
 
     public static OkHttpClient getClient() {
         return client;
@@ -92,6 +96,42 @@ public class HttpUtil {
             logger.error("cannot encode query strings");
         }
         return null;
+    }
+
+    private static OkHttpClient createClient() {
+        final String SSL_ALGORITHM = "SSL";
+        SSLContext context = null;
+        X509TrustManager manager = new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        };
+        OkHttpClient c;
+        try {
+            context = SSLContext.getInstance(SSL_ALGORITHM);
+            context.init(null, new TrustManager[]{manager}, null);
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("no such algorithm named " + SSL_ALGORITHM);
+        } catch (KeyManagementException e) {
+            logger.error("cannot init ssl context");
+            context = null;
+        }
+        if (context != null) {
+            c = new OkHttpClient.Builder().sslSocketFactory(context.getSocketFactory(), manager)
+                    .hostnameVerifier((s, sslSession) -> true).build();
+        } else {
+            c = new OkHttpClient();
+        }
+        return c;
     }
 
 }

@@ -241,8 +241,8 @@ public class ReservationServerApplicationTests {
     public void testVerifyAccount() {
         final String wrongUsername = "wrong-username";
         final String wrongPassword = "wrong-password";
-        boolean success = accountService.verifyAccount(testConfig.getStudentId(), testConfig.getPassword());
         boolean failure = accountService.verifyAccount(wrongUsername, wrongPassword);
+        boolean success = accountService.verifyAccount(testConfig.getStudentId(), testConfig.getPassword());
 
         Assert.assertTrue("verify account with correct account", success);
         Assert.assertFalse("verify account with wrong account", failure);
